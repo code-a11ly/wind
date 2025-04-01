@@ -32,6 +32,7 @@ const AddProduct = () => {
   const [images, setImages] = useState([]);
   const [message, setMessage] = useState('');
 
+  {/*
   const handleImageChange = (event) => {
     const files = event.target.files;
     if (files.length === 0) return;
@@ -42,6 +43,16 @@ const AddProduct = () => {
     // Update state with selected images
     setImages(prevImages => [...prevImages, ...imageUrls]);
   };
+  */}
+
+  const handleImageChange = (event) => {
+    const files = event.target.files;
+    if (files.length === 0) return;
+
+    // Store actual File objects instead of URLs
+    setImages(prevImages => [...prevImages, ...files]);
+  };
+
 
   // Go to the next page
   const nextPage = () => {
@@ -84,7 +95,7 @@ const AddProduct = () => {
 
       if (response.ok) {
         setMessage('Product added successfully!');
-        setProductData({ name: '', brand: '', category: '', color: '', description: '', price: '', stock: '' });
+        setProductData({ name: '', brand: '', status: '', tag: '', category: '', color: '', description: '', price: '', stock: '' });
         setImages([]);
       } else {
         setMessage('Failed to add product.');

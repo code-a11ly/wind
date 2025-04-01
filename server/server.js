@@ -216,25 +216,24 @@ app.get('/products', (req, res) => {
 });
 
 
-
 function saveProductToDatabase(name, brand = null, status = null, tag = null, category = null, color = null, description, price, stock) {
   return new Promise((resolve, reject) => {
     const query = `
       INSERT INTO products (name, brand, status, tag, category, color, description, price, stock, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `;
-    db.run(query, [name, brand, status, tag, category, color, description, price, stock, created_at], function (err) {
+    
+    db.run(query, [name, brand, status, tag, category, color, description, price, stock], function (err) {
       if (err) {
-        console.error('Error inserting product:', err); // Log the error
+        console.error('Error inserting product:', err);
         reject(err);
       } else {
-        console.log(this.lastID);
+        console.log(`Inserted product ID: ${this.lastID}`);
         resolve(this.lastID); // Get the ID of the inserted product
       }
     });
   });
 }
-
 
 function saveImageToDatabase(productId, imageBuffer) {
   return new Promise((resolve, reject) => {
@@ -252,8 +251,6 @@ function saveImageToDatabase(productId, imageBuffer) {
   });
 }
 
-
-
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Define the route for adding products
@@ -263,27 +260,29 @@ app.post('/addproducts', upload.array('images'), async (req, res) => {
     const { name, brand, status, tag, category, color, description, price, stock } = req.body;
 
     // Access images in req.files
-    const images = req.files; // Array of files
+    const images = req.files || []; // Ensure images is always an array
+
     console.log(req.body);
 
-    if (!name || !price || !stock || images.length === 0) {
+    if (!name || !price || !stock) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Save product data to the database
-    const productId = await saveProductToDatabase(name, description, price, stock);
+    // Save product data to the database (correct order of parameters)
+    const productId = await saveProductToDatabase(name, brand, status, tag, category, color, description, price, stock);
 
-    // Save images to the database (or wherever necessary)
+    // Save images to the database
     for (const image of images) {
-      await saveImageToDatabase(productId, image.buffer); // Save image binary data
+      await saveImageToDatabase(productId, image.buffer);
     }
 
     res.status(201).json({ message: 'Product added successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('Error adding product:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 // Place an order
