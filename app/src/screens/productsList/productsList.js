@@ -4,15 +4,22 @@ import { getIp } from '../../components/ip.js';
 function ProductList() {
   const ip = getIp();
   const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    fetch(`http://${ip}:5000/products`, {
-      method: 'GET',
-    })
+    fetch(`http://${ip}:5000/products`)
       .then((response) => response.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error('Error fetching products:', err));
   }, []);
+
+  const openModal = (product) => {
+    setSelectedProduct(product);
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+  };
 
   return (
     <div className="bg-white">
@@ -21,27 +28,19 @@ function ProductList() {
 
         <div className="mt-6 grid grid-cols-1 gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
           {products.map((product) => (
-            <div key={product.id} className="group relative">
-              {/* Product Image */}
+            <div key={product.id} className="group relative cursor-pointer" onClick={() => openModal(product)}>
               <img
                 alt={product.imageAlt || product.name}
                 src={
                   product.images && product.images[0]
                     ? `data:image/png;base64,${product.images[0].data}`
-                    : 'https://via.placeholder.com/150' // Fallback image
+                    : 'https://via.placeholder.com/150'
                 }
                 className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-50"
               />
-
-              {/* Product Info */}
               <div className="mt-4 flex justify-between">
                 <div>
-                  <h3 className="text-sm text-gray-700">
-                    <a href="#">
-                      <span aria-hidden="true" className="absolute inset-0" />
-                      {product.name}
-                    </a>
-                  </h3>
+                  <h3 className="text-sm text-gray-700">{product.name}</h3>
                   <p className="mt-1 text-sm text-gray-500">{product.color || 'N/A'}</p>
                 </div>
                 <p className="text-sm font-medium text-gray-900">
@@ -52,6 +51,35 @@ function ProductList() {
           ))}
         </div>
       </div>
+
+      {/* Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative w-2/3 h-2/3 bg-white p-6 rounded-lg shadow-lg">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
+              onClick={closeModal}
+            >
+              ✖
+            </button>
+            <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
+            <img
+              alt={selectedProduct.imageAlt || selectedProduct.name}
+              src={
+                selectedProduct.images && selectedProduct.images[0]
+                  ? `data:image/png;base64,${selectedProduct.images[0].data}`
+                  : 'https://via.placeholder.com/300'
+              }
+              className="aspect-square w-2/3 h-3/3 rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-50"
+            />
+            <p className="text-lg text-gray-700 mt-4">{selectedProduct.description || 'No description available'}</p>
+            <p className="text-xl font-medium text-gray-900 mt-2">
+              {selectedProduct.price ? `$${selectedProduct.price}` : 'Price Unavailable'}
+            </p>
+            <p className="text-md text-gray-600 mt-1">Color: {selectedProduct.color || 'N/A'}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

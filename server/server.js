@@ -161,6 +161,11 @@ app.get('/products', (req, res) => {
       SELECT
         p.id AS product_id,
         p.name,
+        p.brand,
+        p.status,
+        p.tag,
+        p.category,
+        p.color,
         p.description,
         p.price,
         p.stock,
@@ -183,7 +188,7 @@ app.get('/products', (req, res) => {
 
         // Group products by ID and aggregate their images
         const products = rows.reduce((acc, row) => {
-            const { product_id, name, description, price, stock, created_at, image_id, image_data } = row;
+            const { product_id, name, brand, status, tag, category, color, description, price, stock, created_at, image_id, image_data } = row;
 
             // Find or create the product in the result list
             let product = acc.find(p => p.id === product_id);
@@ -191,6 +196,11 @@ app.get('/products', (req, res) => {
                 product = {
                     id: product_id,
                     name,
+                    brand,
+                    status,
+                    tag,
+                    category,
+                    color,
                     description,
                     price,
                     stock,
@@ -222,7 +232,7 @@ function saveProductToDatabase(name, brand = null, status = null, tag = null, ca
       INSERT INTO products (name, brand, status, tag, category, color, description, price, stock, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     `;
-    
+
     db.run(query, [name, brand, status, tag, category, color, description, price, stock], function (err) {
       if (err) {
         console.error('Error inserting product:', err);

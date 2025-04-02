@@ -38,9 +38,9 @@ const Page2 = ({ formData, handleInputChange, handleImageChange, images }) => {
             onChange={(e) => handleInputChange('status', e.target.value)}
           >
             <option className="border-indigo-300" value="">Status</option>
-            <option value="option1">In Stock</option>
-            <option value="option2">Out of Stock</option>
-            <option value="option3">Pre-Order</option>
+            <option value="In Stock">In Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+            <option value="Pre-Order">Pre-Order</option>
           </select>
 
           <select
@@ -49,9 +49,9 @@ const Page2 = ({ formData, handleInputChange, handleImageChange, images }) => {
             onChange={(e) => handleInputChange('tag', e.target.value)}
           >
             <option value="">Tag</option>
-            <option value="option1">Best Seller</option>
-            <option value="option2">Limited Edition</option>
-            <option value="option3">New Arrival</option>
+            <option value="Best Seller">Best Seller</option>
+            <option value="Limited Edition">Limited Edition</option>
+            <option value="New Arrival">New Arrival</option>
           </select>
         </div>
 
