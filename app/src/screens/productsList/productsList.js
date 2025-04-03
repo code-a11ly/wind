@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from "react";
+
 import { getIp } from '../../components/ip.js';
 
 function ProductList() {
   const ip = getIp();
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+
 
   useEffect(() => {
     fetch(`http://${ip}:5000/products`)
@@ -55,7 +59,8 @@ function ProductList() {
       {/* Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative flex flex-row w-2/3 h-2/3 bg-white p-6 rounded-lg shadow-lg">
+          <div className="relative flex flex-row w-[48rem] h-[25rem] bg-white p-6 rounded-lg shadow-lg">
+            {/* Close Button */}
             <button
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
               onClick={closeModal}
@@ -63,35 +68,66 @@ function ProductList() {
               ✖
             </button>
 
-            <div className="flex flex-wrap gap-2">
-              {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                selectedProduct.images.map((image, index) => (
+            {/* Left Section: Images */}
+            <div>
+              <div className="flex flex-col gap-3">
+              {/* Main Image */}
+              <img
+                alt={selectedProduct.imageAlt || selectedProduct.name}
+                src={`data:image/png;base64,${selectedProduct.images[selectedImageIndex]?.data}`}
+                className="w-96 h-72 rounded-md bg-gray-200 object-cover"
+              />
+
+              {/* Thumbnail Images (Right Side) */}
+              <div className="w-96 flex flex-row gap-2 ml-1/2">
+                {selectedProduct.images.map((image, index) => (
                   <img
                     key={index}
                     alt={selectedProduct.imageAlt || selectedProduct.name}
                     src={`data:image/png;base64,${image.data}`}
-                    className="w-32 h-32 rounded-md bg-gray-200 object-cover group-hover:opacity-75"
+                    className={`w-16 h-16 rounded-md bg-gray-200 object-cover cursor-pointer
+                      ${selectedImageIndex === index ? 'ring-2 ring-blue-500 shadow-md' : ''}`}
+                    onClick={() => setSelectedImageIndex(index)}
                   />
-                ))
-              ) : (
-                <img
-                  alt="Placeholder"
-                  src="https://via.placeholder.com/300"
-                  className="w-32 h-32 rounded-md bg-gray-200 object-cover group-hover:opacity-75"
-                />
-              )}
+                ))}
+              </div>
             </div>
-            <div className="pl-6">
-              <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
-              <p className="text-lg text-gray-700 mt-4">{selectedProduct.description || 'No description available'}</p>
+            </div>
+            {/* Right Section: Product Details */}
+            <div className="flex flex-col pl-7 gap-2">
+              <h2 className="text-5xl font-medium">{selectedProduct.name}</h2>
               <p className="text-xl font-medium text-gray-900 mt-2">
-                {selectedProduct.price ? `$${selectedProduct.price}` : 'Price Unavailable'}
+                {selectedProduct.price ? `$${selectedProduct.price}.00` : 'Price Unavailable'}
               </p>
+              <div className="flex flex-row gap-1">
+                <div className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.status}</p>
+                </div>
+                <div className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.tag}</p>
+                </div>
+                <div className="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.category}</p>
+                </div>
+              </div>
               <p className="text-md text-gray-600 mt-1">Color: {selectedProduct.color || 'N/A'}</p>
+              <p className="text-lg text-gray-700 mt-4">Details: {selectedProduct.description || 'No description available'}</p>
+
+              <button
+                type="submit"
+                className="w-full flex justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+              Add to Cart
+              </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
