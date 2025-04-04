@@ -25,7 +25,7 @@ const Page1 = ({ formData, handleInputChange }) => {
         <div>
           <label className="block text-sm font-normal text-gray-400 mb-1">Brand</label>
           <input
-            type="number"
+            type="text"
             className="w-full w-3/10 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
             value={formData.brand}

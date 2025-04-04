@@ -17,7 +17,7 @@ const Page2 = ({ formData, handleInputChange, handleImageChange, images }) => {
         <div>
           <label className="block text-sm font-normal text-gray-400 mb-1">Color</label>
           <input
-            type="number"
+            type="text"
             step="0.01"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
