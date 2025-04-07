@@ -29,7 +29,9 @@ function LoginForm() {
   const [dataToSend, setDataToSend] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    is_admin: false,
+    role: 'Employee'
   });
 
   const [logData, setLogData] = useState({

@@ -59,7 +59,7 @@ function ProductList() {
       {/* Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative flex flex-row w-[55rem] bg-white p-6 rounded-lg shadow-lg">
+          <div className="relative flex flex-row bg-white p-6 rounded-lg shadow-lg">
             {/* Close Button */}
             <button
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -115,7 +115,7 @@ function ProductList() {
               </div>
               <div className="">
                 <p className="text-md text-gray-600 mt-1">Colors {selectedProduct.color || 'N/A'}</p>
-                <p className="text-lg text-gray-700 mt-4">Details <br/> {selectedProduct.description || 'No description available'}</p>
+                <p className="w-96 text-lg text-gray-700 mt-4">Details <br/> {selectedProduct.description || 'No description available'}</p>
               </div>
               <button
                 type="submit"
