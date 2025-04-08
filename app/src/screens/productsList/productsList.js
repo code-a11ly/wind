@@ -25,6 +25,12 @@ function ProductList() {
     setSelectedProduct(null);
   };
 
+  const addToCart = (product) => {
+    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+    cart.push(product);
+    localStorage.setItem('cart', JSON.stringify(cart));
+  };
+
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
@@ -113,13 +119,14 @@ function ProductList() {
                   <p className="text-xs text-gray-400 font-md">{selectedProduct.status}</p>
                 </div>
               </div>
-              <div className="">
+              <div className="w-72">
                 <p className="text-md text-gray-600 mt-1">Colors {selectedProduct.color || 'N/A'}</p>
-                <p className="w-96 text-lg text-gray-700 mt-4">Details <br/> {selectedProduct.description || 'No description available'}</p>
+                <p className=" text-base text-gray-700 mt-4">Details <br/> {selectedProduct.description || 'No description available'}</p>
               </div>
               <button
                 type="submit"
                 className="w-72 flex justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                onClick={() => addToCart(selectedProduct.id)}
               >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
