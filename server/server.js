@@ -41,11 +41,11 @@ const db = new sqlite3.Database('./data.db', (err) => {
 
 // Register a new user
 app.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, is_admin, role } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const sql = 'INSERT INTO users (name, email, password) VALUES (?, ?, ?)';
-    db.run(sql, [name, email, hashedPassword], function (err) {
+    const sql = 'INSERT INTO users (name, email, password, is_admin, role) VALUES (?, ?, ?, ?, ?)';
+    db.run(sql, [name, email, hashedPassword, password, is_admin, role], function (err) {
         if (err) {
             res.status(500).json({ error: err.message });
             console.error(err.message);

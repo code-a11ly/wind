@@ -101,13 +101,6 @@ function ProductList() {
             </div>
             {/* Right Section: Product Details */}
             <div className="flex flex-col pl-7 gap-2">
-              <h2 className="text-5xl font-bold text-gray-700">{selectedProduct.name}</h2>
-              <p className="text-xl font-medium text-gray-400 mt-2">
-                {selectedProduct.brand ? `${selectedProduct.brand}` : 'Brand Unavailable'}
-              </p>
-              <p className="text-xl font-medium text-gray-900 mt-2">
-                {selectedProduct.price ? `$${selectedProduct.price}.00` : 'Price Unavailable'}
-              </p>
               <div className="flex flex-row gap-1">
                 <div className="px-4 py-2 border border-gray-300 rounded-lg">
                   <p className="text-xs text-gray-400 font-md">{selectedProduct.category}</p>
@@ -119,9 +112,17 @@ function ProductList() {
                   <p className="text-xs text-gray-400 font-md">{selectedProduct.status}</p>
                 </div>
               </div>
+              <h2 className="text-5xl font-bold text-gray-700">{selectedProduct.name}</h2>
+              <p className="text-xl font-medium text-gray-400 mt-2">
+                {selectedProduct.brand ? `${selectedProduct.brand}` : 'Brand Unavailable'}
+              </p>
+              <p className="text-xl font-medium text-gray-900">
+                {selectedProduct.price ? `$${selectedProduct.price}.00` : 'Price Unavailable'}
+              </p>
+
               <div className="w-72">
-                <p className="text-md text-gray-600 mt-1">Colors {selectedProduct.color || 'N/A'}</p>
-                <p className=" text-base text-gray-700 mt-4">Details <br/> {selectedProduct.description || 'No description available'}</p>
+                <p className=" text-base text-gray-700">{/*Details <br/>*/} {selectedProduct.description || 'No description available'}</p>
+                <p className="text-md text-gray-600 mt-3 <br/>">Colors {selectedProduct.color || 'N/A'}</p>
               </div>
               <button
                 type="submit"
