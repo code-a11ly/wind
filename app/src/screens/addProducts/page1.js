@@ -46,8 +46,7 @@ const Page1 = ({ formData, handleInputChange }) => {
             <option value="Electronics & Technology">Electronics & Technology</option>
             <option value="Clothing & Fashion">Clothing & Fashion</option>
             <option value="Home & Furniture">Home & Furniture</option>
-            <option value="Home & Furniture">Sports & Outdoor</option>
-            <option value="Home & Furniture">Home & Furniture</option>
+            <option value="Sports & Outdoor">Sports & Outdoor</option>
           </select>
         </div>
         </div>

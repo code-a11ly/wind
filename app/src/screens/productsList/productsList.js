@@ -6,6 +6,8 @@ function ProductList() {
   const ip = getIp();
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [maxQuantity, setMaxQuantity] = useState(null);
+
 
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
@@ -19,16 +21,33 @@ function ProductList() {
 
   const openModal = (product) => {
     setSelectedProduct(product);
+    setMaxQuantity(product.stock);
   };
 
   const closeModal = () => {
     setSelectedProduct(null);
+    setMaxQuantity(null);
   };
 
-  const addToCart = (product) => {
+  const addToCart = (product, quantity) => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    cart.push(product);
+    cart.push({product, quantity});
     localStorage.setItem('cart', JSON.stringify(cart));
+  };
+
+  const [quantity, setQuantity] = useState(1);
+
+
+  const increaseQuantity = () => {
+    if (quantity < maxQuantity) {
+      setQuantity(quantity + 1);
+    }
+  };
+
+  const decreaseQuantity = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+    }
   };
 
   return (
@@ -117,17 +136,35 @@ function ProductList() {
                 {selectedProduct.brand ? `${selectedProduct.brand}` : 'Brand Unavailable'}
               </p>
               <p className="text-xl font-medium text-gray-900">
-                {selectedProduct.price ? `$${selectedProduct.price}.00` : 'Price Unavailable'}
+                {selectedProduct.price ? `$${selectedProduct.price}` : 'Price Unavailable'}
               </p>
 
               <div className="w-72">
                 <p className=" text-base text-gray-700">{/*Details <br/>*/} {selectedProduct.description || 'No description available'}</p>
                 <p className="text-md text-gray-600 mt-3 <br/>">Colors {selectedProduct.color || 'N/A'}</p>
+                <p className="text-md text-gray-600 mt-3 <br/>">Quantity: {selectedProduct.stock || 'N/A'}</p>
+
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={decreaseQuantity}
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  >
+                    −
+                  </button>
+                  <span className="px-4 text-lg">{quantity}</span>
+                  <button
+                    onClick={increaseQuantity}
+                    className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
                 className="w-72 flex justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                onClick={() => addToCart(selectedProduct.id)}
+                onClick={() => addToCart(selectedProduct, quantity)}
               >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
