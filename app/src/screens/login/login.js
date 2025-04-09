@@ -64,6 +64,8 @@ function LoginForm() {
           const data = await response.json();
 
           setTempData(data);
+
+          localStorage.removeItem('cart');
           // console.log('DATAtemp:', getTempData());
           // Handle successful login, such as storing tokens in local storage and redirecting to a dashboard
           // navigation.navigate('HomeScreen');
@@ -180,6 +182,7 @@ function LoginForm() {
       })
         .then(response => {
           if (response.ok) {
+            localStorage.removeItem('cart');
             return response.json();
           }
           throw new Error('Network response was not ok.');

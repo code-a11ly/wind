@@ -25,10 +25,12 @@ const GoogleLoginButton = () => {
 
         console.log('User authenticated:', data);
 
+
         // Save user details to localStorage for persistence
         localStorage.setItem('name', name);
         localStorage.setItem('email', email);
 
+        localStorage.removeItem('cart');
         // Navigate to home screen
         navigate('/home');
       })

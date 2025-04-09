@@ -16,15 +16,26 @@ const navigation = [
 export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [data, setData] = useState(getTempData());
+  const [data, setData] = useState('');
+
+  const getLocalStorageData = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('name');
+    }
+    return null;
+  };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const updatedData = getTempData(); // Fetch the updated tempData
-      setData(updatedData); // Update the state
-    }, 1000); // Poll every second (or adjust as needed)
+    const initialData = getLocalStorageData();
+    setData(initialData);
+    console.log(data);
 
-    return () => clearInterval(interval); // Cleanup on unmount
+    const interval = setInterval(() => {
+      const updatedData = getLocalStorageData();
+      setData(updatedData);
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, []);
 
 
