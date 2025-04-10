@@ -295,6 +295,44 @@ app.post('/addproducts', upload.array('images'), async (req, res) => {
 
 
 
+app.post('/preorders', (req, res) => {
+  const { orderId, productId, quantity, price } = req.body;
+
+  await db.run('BEGIN TRANSACTION');
+
+  try {
+    // 1. Check stock
+    const product = await db.get(`SELECT stock FROM products WHERE id = ?`, [productId]);
+
+    if (!product || product.stock < quantity) {
+      throw new Error('Insufficient stock');
+    }
+
+    // 2. Insert into order_items
+    await db.run(`
+      INSERT INTO order_items (order_id, product_id, quantity, price)
+      VALUES (?, ?, ?, ?)
+    `, [orderId, productId, quantity, price]);
+
+    // 3. Update stock
+    await db.run(`
+      UPDATE products SET stock = stock - ? WHERE id = ?
+    `, [quantity, productId]);
+
+    // 4. Commit transaction
+    await db.run('COMMIT');
+
+    return { success: true };
+
+  } catch (error) {
+    await db.run('ROLLBACK');
+    return { success: false, error: error.message };
+  }
+}
+
+
+
+
 // Place an order
 app.post('/orders', (req, res) => {
     const { user_id, items } = req.body;
