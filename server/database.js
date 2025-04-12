@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS pre_order (
     product_id INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     price REAL NOT NULL,
-    status TEXT CHECK(role IN ('Open', 'Canceled', 'Closed')) DEFAULT 'Open',
+    status TEXT CHECK(status IN ('Open', 'Canceled', 'Closed')) DEFAULT 'Open',
     FOREIGN KEY(order_id) REFERENCES orders(id),
     FOREIGN KEY(product_id) REFERENCES products(id)
 );

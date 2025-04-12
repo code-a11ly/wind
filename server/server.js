@@ -295,7 +295,7 @@ app.post('/addproducts', upload.array('images'), async (req, res) => {
 
 
 
-app.post('/preorders', (req, res) => {
+app.post('/preorders', async (req, res) => {
   const { orderId, productId, quantity, price } = req.body;
 
   await db.run('BEGIN TRANSACTION');
@@ -328,7 +328,7 @@ app.post('/preorders', (req, res) => {
     await db.run('ROLLBACK');
     return { success: false, error: error.message };
   }
-}
+});
 
 
 
