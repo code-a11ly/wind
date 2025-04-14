@@ -8,6 +8,7 @@ function ProductList() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [maxQuantity, setMaxQuantity] = useState(null);
 
+  const [orderStatus, setOrderStatus] = useState('Closed');
 
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
@@ -46,18 +47,45 @@ function ProductList() {
   };
 
 
-  const addToCart = async (product, quantity) => {
-    // Get the ID from localStorage and convert it to an integer
-    const users_id = parseInt(localStorage.getItem('id')) || 0; // Fallback to 0 if invalid
-    console.log('ID (type):', users_id, typeof users_id); // Should log a number
+  const addToCart = async (product_id, quantity, price) => {
+
+    if (orderStatus == ('Closed' || 'Canceled')) {
+      // Get the ID from localStorage and convert it to an integer
+      const users_id = parseInt(localStorage.getItem('id')) || 0; // Fallback to 0 if invalid
+      console.log('ID (type):', users_id, typeof users_id); // Should log a number
+
+      try {
+          const response = await fetch(`http://${ip}:5000/start-preorder`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ users_id }), // Now sends an integer
+          });
+
+          if (response.ok) { // Checks for status 200-299
+              console.log('Preorder started successfully');
+              const data = await response.json();
+
+              setOrderStatus('Open');
+          } else if (response.status === 401) {
+              console.error('Invalid credentials!');
+          } else {
+              console.error('Failed to start preorder. Status:', response.status);
+          }
+      } catch (error) {
+          console.error('Network error:', error);
+      }
+    }
+
 
     try {
-        const response = await fetch(`http://${ip}:5000/start-preorder`, {
+        const response = await fetch(`http://${ip}:5000/add-to-preorder`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ users_id }), // Now sends an integer
+            body: JSON.stringify({ product_id, quantity, price }), // Now sends an integer
         });
 
         if (response.ok) { // Checks for status 200-299
@@ -67,7 +95,7 @@ function ProductList() {
         } else if (response.status === 401) {
             console.error('Invalid credentials!');
         } else {
-            console.error('Failed to start preorder. Status:', response.status);
+            console.error('Failed to start itens preorder. Status:', response.status);
         }
     } catch (error) {
         console.error('Network error:', error);
@@ -189,7 +217,7 @@ function ProductList() {
               <button
                 type="submit"
                 className="w-72 flex justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                onClick={() => addToCart(selectedProduct.id, quantity)}
+                onClick={() => addToCart(selectedProduct.id, quantity, selectedProduct.price)}
               >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />

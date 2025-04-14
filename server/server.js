@@ -328,7 +328,7 @@ app.post('/start-preorder', async (req, res) => {
     const preOrderId = await createPreOrder(users_id);
     req.session.pre_order_id = preOrderId; // Store in session
     res.status(201).json({ message: 'Pre-order started', preOrderId });
-    console.log('Pre-order started');
+    console.log('Pre-order started', preOrderId);
   } catch (err) {
     console.log('error: Could not create pre-order');
     res.status(500).json({ error: 'Could not create pre-order' });
@@ -340,6 +340,8 @@ app.post('/start-preorder', async (req, res) => {
 app.post('/add-to-preorder', async (req, res) => {
   const pre_order_id = req.session.pre_order_id;
   const { product_id, quantity, price } = req.body;
+
+  console.log(product_id, quantity, price);
 
   if (!pre_order_id) {
     return res.status(400).json({ error: 'No active pre-order. Please start one first.' });
