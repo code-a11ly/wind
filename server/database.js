@@ -54,15 +54,21 @@ CREATE TABLE IF NOT EXISTS orders (
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
--- Pre_Order table
+-- Pre_Order Section
 CREATE TABLE IF NOT EXISTS pre_order (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_id INTEGER NOT NULL,
+    users_id INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('Open', 'Canceled', 'Closed')) DEFAULT 'Open',
+    FOREIGN KEY(users_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS pre_order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    pre_order_id INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     quantity INTEGER NOT NULL,
     price REAL NOT NULL,
-    status TEXT CHECK(status IN ('Open', 'Canceled', 'Closed')) DEFAULT 'Open',
-    FOREIGN KEY(order_id) REFERENCES orders(id),
+    FOREIGN KEY(pre_order_id) REFERENCES pre_order(id),
     FOREIGN KEY(product_id) REFERENCES products(id)
 );
 `;

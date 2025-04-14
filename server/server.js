@@ -22,6 +22,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.SECRET_KEY || 'your_secret_key';
 
+const upload = multer({ storage: multer.memoryStorage() });
+
 
 
 // Middleware
@@ -261,7 +263,7 @@ function saveImageToDatabase(productId, imageBuffer) {
   });
 }
 
-const upload = multer({ storage: multer.memoryStorage() });
+
 
 // Define the route for adding products
 app.post('/addproducts', upload.array('images'), async (req, res) => {
@@ -295,66 +297,156 @@ app.post('/addproducts', upload.array('images'), async (req, res) => {
 
 
 
-app.post('/preorders', async (req, res) => {
-  const { orderId, productId, quantity, price } = req.body;
+app.use(session({
+  secret: SECRET_KEY, // use a strong secret in production
+  resave: false,
+  saveUninitialized: true
+}));
 
-  await db.run('BEGIN TRANSACTION');
+function createPreOrder(userId) {
+  return new Promise((resolve, reject) => {
+    const query = `
+      INSERT INTO pre_order (users_id, status)
+      VALUES (?, 'Open')
+    `;
+    db.run(query, [userId], function (err) {
+      if (err) reject(err);
+      else resolve(this.lastID); // ID of the new pre_order
+    });
+  });
+}
+
+
+
+app.post('/start-preorder', async (req, res) => {
+  const { users_id } = req.body;
+
+  if (!users_id) return res.status(400).json({ error: 'Missing user ID' });
 
   try {
-    // 1. Check stock
-    const product = await db.get(`SELECT stock FROM products WHERE id = ?`, [productId]);
+    const preOrderId = await createPreOrder(users_id);
+    req.session.pre_order_id = preOrderId; // Store in session
+    res.status(201).json({ message: 'Pre-order started', preOrderId });
+    console.log('Pre-order started');
+  } catch (err) {
+    res.status(500).json({ error: 'Could not create pre-order' });
 
-    if (!product || product.stock < quantity) {
-      throw new Error('Insufficient stock');
-    }
+  }
+});
 
-    // 2. Insert into order_items
-    await db.run(`
-      INSERT INTO order_items (order_id, product_id, quantity, price)
-      VALUES (?, ?, ?, ?)
-    `, [orderId, productId, quantity, price]);
+app.post('/add-to-preorder', async (req, res) => {
+  const pre_order_id = req.session.pre_order_id;
+  const { product_id, quantity, price } = req.body;
 
-    // 3. Update stock
-    await db.run(`
-      UPDATE products SET stock = stock - ? WHERE id = ?
-    `, [quantity, productId]);
+  if (!pre_order_id) {
+    return res.status(400).json({ error: 'No active pre-order. Please start one first.' });
+  }
 
-    // 4. Commit transaction
-    await db.run('COMMIT');
+  if (!product_id || !quantity || !price) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
-    return { success: true };
-
-  } catch (error) {
-    await db.run('ROLLBACK');
-    return { success: false, error: error.message };
+  try {
+    await addPreOrderItem(pre_order_id, product_id, quantity, price);
+    res.status(201).json({ message: 'Item added to current pre-order' });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not add item' });
   }
 });
 
 
 
 
-// Place an order
-app.post('/orders', (req, res) => {
-    const { user_id, items } = req.body;
+function subtractStock(productId, quantity) {
+  return new Promise((resolve, reject) => {
+    const query = `
+      UPDATE products
+      SET stock = stock - ?
+      WHERE id = ? AND stock >= ?
+    `;
 
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const orderSql = 'INSERT INTO orders (user_id, total) VALUES (?, ?)';
-
-    db.run(orderSql, [user_id, total], function (err) {
-        if (err) {
-            res.status(500).json({ error: err.message });
-        } else {
-            const orderId = this.lastID;
-
-            const orderItemsSql = 'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)';
-            items.forEach((item) => {
-                db.run(orderItemsSql, [orderId, item.product_id, item.quantity, item.price]);
-            });
-
-            res.status(201).json({ order_id: orderId });
-        }
+    db.run(query, [quantity, productId, quantity], function (err) {
+      if (err) reject(err);
+      else if (this.changes === 0) {
+        reject(new Error('Not enough stock available'));
+      } else resolve();
     });
+  });
+}
+
+function addPreOrderItem(preOrderId, productId, quantity, price) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await subtractStock(productId, quantity); // Deduct first
+
+      const query = `
+        INSERT INTO pre_order_items (pre_order_id, product_id, quantity, price)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      db.run(query, [preOrderId, productId, quantity, price], function (err) {
+        if (err) reject(err);
+        else resolve();
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+
+app.post('/cancel-preorder', async (req, res) => {
+  const pre_order_id = req.session.pre_order_id;
+
+  if (!pre_order_id) {
+    return res.status(400).json({ error: 'No active pre-order to cancel' });
+  }
+
+  try {
+    // 1. Get all items from pre_order
+    const items = await new Promise((resolve, reject) => {
+      db.all(`SELECT product_id, quantity FROM pre_order_items WHERE pre_order_id = ?`, [pre_order_id], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
+
+    // 2. Add quantities back to stock
+    const updateStock = `UPDATE products SET stock = stock + ? WHERE id = ?`;
+    for (const item of items) {
+      await new Promise((resolve, reject) => {
+        db.run(updateStock, [item.quantity, item.product_id], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+
+    // 3. Update pre_order status
+    await new Promise((resolve, reject) => {
+      db.run(`UPDATE pre_order SET status = 'Canceled' WHERE id = ?`, [pre_order_id], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+
+    // 4. Clear session
+    req.session.pre_order_id = null;
+
+    res.json({ message: 'Pre-order canceled and stock restored' });
+  } catch (err) {
+    console.error('Error canceling pre-order:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
+
+app.post('/close-preorder', (req, res) => {
+  req.session.pre_order_id = null;
+  res.json({ message: 'Pre-order closed' });
+});
+
+
+
 
 // Start Server
 app.listen(PORT, () => {

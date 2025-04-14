@@ -47,24 +47,20 @@ function ProductList() {
 
 
   const addToCart = async (product, quantity) => {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    cart.push({product, quantity});
-    localStorage.setItem('cart', JSON.stringify(cart));
+    const user_id = localStorage.getItem('email') || '';
 
     try {
-      const response = await fetch(`http://${ip}:5000/login`, {
+      const response = await fetch(`http://${ip}:5000/start-preorder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({product, quantity}),
+        body: JSON.stringify({ user_id }),
       });
 
       if (response.status === 200) {
         console.log('Login successful');
         const data = await response.json();
-
-        
 
         localStorage.removeItem('cart');
         // console.log('DATAtemp:', getTempData());
