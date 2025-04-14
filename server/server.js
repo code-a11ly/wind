@@ -90,6 +90,7 @@ app.post('/login', async (req, res) => {
 
             res.json({
                 token,
+                id: user.id,
                 name: user.name,
                 email: user.email,
             });
@@ -329,7 +330,9 @@ app.post('/start-preorder', async (req, res) => {
     res.status(201).json({ message: 'Pre-order started', preOrderId });
     console.log('Pre-order started');
   } catch (err) {
+    console.log('error: Could not create pre-order');
     res.status(500).json({ error: 'Could not create pre-order' });
+
 
   }
 });

@@ -47,37 +47,32 @@ function ProductList() {
 
 
   const addToCart = async (product, quantity) => {
-    const user_id = localStorage.getItem('email') || '';
+    // Get the ID from localStorage and convert it to an integer
+    const users_id = parseInt(localStorage.getItem('id')) || 0; // Fallback to 0 if invalid
+    console.log('ID (type):', users_id, typeof users_id); // Should log a number
 
     try {
-      const response = await fetch(`http://${ip}:5000/start-preorder`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id }),
-      });
+        const response = await fetch(`http://${ip}:5000/start-preorder`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ users_id }), // Now sends an integer
+        });
 
-      if (response.status === 200) {
-        console.log('Login successful');
-        const data = await response.json();
-
-        localStorage.removeItem('cart');
-        // console.log('DATAtemp:', getTempData());
-        // Handle successful login, such as storing tokens in local storage and redirecting to a dashboard
-        // navigation.navigate('HomeScreen');
-      } else if (response.status === 401) {
-        console.error('Email ou Senha inválidos!');
-        // Handle login failure, show error message to the user, etc.
-      } else {
-        console.error('Falha em fazer login!');
-        // Handle login failure, show error message to the user, etc.
-      }
+        if (response.ok) { // Checks for status 200-299
+            console.log('Preorder started successfully');
+            const data = await response.json();
+            localStorage.removeItem('cart');
+        } else if (response.status === 401) {
+            console.error('Invalid credentials!');
+        } else {
+            console.error('Failed to start preorder. Status:', response.status);
+        }
     } catch (error) {
-      console.error('Error logging in:', error);
-      // Handle error (e.g., show error message to the user)
+        console.error('Network error:', error);
     }
-  };
+};
 
 
   return (

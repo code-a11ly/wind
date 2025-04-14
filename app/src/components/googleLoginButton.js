@@ -21,12 +21,13 @@ const GoogleLoginButton = () => {
     })
       .then((res) => res.json())
       .then((data) => {
-        const { name, email } = data.user;
+        const { id, name, email } = data.user;
 
         console.log('User authenticated:', data);
 
 
         // Save user details to localStorage for persistence
+        localStorage.setItem('id', id);
         localStorage.setItem('name', name);
         localStorage.setItem('email', email);
 
