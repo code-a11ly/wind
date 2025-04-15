@@ -31,7 +31,7 @@ const GoogleLoginButton = () => {
         localStorage.setItem('name', name);
         localStorage.setItem('email', email);
 
-        localStorage.removeItem('cart');
+        localStorage.removeItem('preOrderId');
         // Navigate to home screen
         navigate('/home');
       })

@@ -8,7 +8,7 @@ import AddProduct from './screens/addProducts/addProducts.js';
 import ProductList from './screens/productsList/productsList.js';
 
 import NotFound from './screens/notfound.js';
-import Landing from './screens/landing/landing.js';
+import Cart from './screens/cart/cart.js';
 
 
 const App = () => {
@@ -22,7 +22,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/addProducts" element={<AddProduct />} />
         <Route path="/productsList" element={<ProductList />} />
-        <Route path="/landing" element={<Landing />} />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </Router>
   );

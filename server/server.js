@@ -338,12 +338,12 @@ app.post('/start-preorder', async (req, res) => {
 });
 
 app.post('/add-to-preorder', async (req, res) => {
-  const pre_order_id = req.session.pre_order_id;
-  const { product_id, quantity, price } = req.body;
+  // const pre_order_id = req.session.pre_order_id;
+  const { preOrderId, product_id, quantity, price } = req.body;
 
-  console.log(product_id, quantity, price);
+  console.log( preOrderId, product_id, quantity, price);
 
-  if (!pre_order_id) {
+  if (!preOrderId) {
     return res.status(400).json({ error: 'No active pre-order. Please start one first.' });
   }
 
@@ -352,7 +352,7 @@ app.post('/add-to-preorder', async (req, res) => {
   }
 
   try {
-    await addPreOrderItem(pre_order_id, product_id, quantity, price);
+    await addPreOrderItem(preOrderId, product_id, quantity, price);
     res.status(201).json({ message: 'Item added to current pre-order' });
   } catch (err) {
     res.status(500).json({ error: 'Could not add item' });

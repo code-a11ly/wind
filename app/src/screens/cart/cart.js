@@ -13,10 +13,20 @@ function Cart() {
 
 
   useEffect(() => {
-    setProducts(localStorage.cart.product);
+    setProducts(localStorage.getItem('preOrderId'));
   }, []);
 
   const [quantity, setQuantity] = useState(1);
+
+  const openModal = (product) => {
+    setSelectedProduct(product);
+    setMaxQuantity(product.stock);
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+    setMaxQuantity(null);
+  };
 
 
   const increaseQuantity = () => {

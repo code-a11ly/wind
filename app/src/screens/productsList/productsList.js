@@ -10,6 +10,8 @@ function ProductList() {
 
   const [orderStatus, setOrderStatus] = useState('Closed');
 
+  // const [preOrderId, setPreOrderId] = useState(null);
+
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
 
@@ -49,7 +51,7 @@ function ProductList() {
 
   const addToCart = async (product_id, quantity, price) => {
 
-    if (orderStatus == ('Closed' || 'Canceled')) {
+    if (orderStatus == ('Closed' || 'Canceled' || '')) {
       // Get the ID from localStorage and convert it to an integer
       const users_id = parseInt(localStorage.getItem('id')) || 0; // Fallback to 0 if invalid
       console.log('ID (type):', users_id, typeof users_id); // Should log a number
@@ -67,6 +69,9 @@ function ProductList() {
               console.log('Preorder started successfully');
               const data = await response.json();
 
+              console.log(data.preOrderId);
+
+              localStorage.setItem('preOrderId', data.preOrderId);
               setOrderStatus('Open');
           } else if (response.status === 401) {
               console.error('Invalid credentials!');
@@ -78,6 +83,8 @@ function ProductList() {
       }
     }
 
+    const preOrderId = parseInt(localStorage.getItem('preOrderId')); // Fallback to 0 if invalid
+    console.log('order (type):', preOrderId, typeof preOrderId); // Should log a number
 
     try {
         const response = await fetch(`http://${ip}:5000/add-to-preorder`, {
@@ -85,7 +92,7 @@ function ProductList() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ product_id, quantity, price }), // Now sends an integer
+            body: JSON.stringify({ preOrderId, product_id, quantity, price }), // Now sends an integer
         });
 
         if (response.ok) { // Checks for status 200-299
