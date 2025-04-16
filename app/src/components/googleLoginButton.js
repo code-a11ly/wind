@@ -28,7 +28,9 @@ const GoogleLoginButton = () => {
 
         // Save user details to localStorage for persistence
         localStorage.setItem('id', id);
-        localStorage.setItem('name', name);
+        localStorage.setItem('name', JSON.stringify(name));
+
+        // localStorage.setItem('name', name);
         localStorage.setItem('email', email);
 
         localStorage.removeItem('preOrderId');

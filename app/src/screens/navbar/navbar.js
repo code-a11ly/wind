@@ -4,31 +4,34 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
-import { getTempData } from '../../components/tempData.js';
 
 const navigation = [
   { name: 'Product', href: '/productsList' },
   { name: 'Add', href: '/addProducts' },
-  { name: 'Marketplace', href: '/landing' },
+  { name: 'Marketplace', href: '/cart' },
   { name: 'Company', href: '/' },
 ]
 
 export default function NavBar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const [data, setData] = useState('');
+  const [data, setData] = useState("Jane Doe");
+
 
   const getLocalStorageData = () => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('name');
-    }
-    return null;
-  };
+  const raw = localStorage.getItem('name');
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+};
+
 
   useEffect(() => {
     const initialData = getLocalStorageData();
     setData(initialData);
-    console.log(data);
+    console.log('nav:', data);
 
     const interval = setInterval(() => {
       const updatedData = getLocalStorageData();
@@ -36,7 +39,7 @@ export default function NavBar() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [data]);
 
 
   return (
@@ -109,23 +112,17 @@ export default function NavBar() {
                   </a>
                 ))}
               </div>
+
+
               <div className="py-6">
-                { data.name === null ? (
                 <a
                   href="#"
                   className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                 >
-                  Log in
+                  {data.name ? data.name : 'Log in'}
                 </a>
-                ) : (
-                <a
-                  href="#"
-                  className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
-                >
-                  {data.name}
-                </a>
-                )}
               </div>
+
             </div>
           </div>
         </DialogPanel>

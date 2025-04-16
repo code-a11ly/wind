@@ -298,6 +298,100 @@ app.post('/addproducts', upload.array('images'), async (req, res) => {
 
 
 
+// Fetch pre-order by ID and associated product information
+app.get('/preorder/:preOrderId', (req, res) => {
+    const { preOrderId } = req.params;
+    console.log('GETTING PREORDER: ', preOrderId);
+
+    // SQL to fetch the pre-order details and associated products
+    const sql = `
+        SELECT
+            po.id AS pre_order_id,
+            po.status AS pre_order_status,
+            poi.id AS pre_order_item_id,
+            poi.quantity,
+            poi.price AS item_price,
+            p.id AS product_id,
+            p.name AS product_name,
+            p.brand AS product_brand,
+            p.status AS product_status,
+            p.tag AS product_tag,
+            p.category AS product_category,
+            p.color AS product_color,
+            p.description AS product_description,
+            p.price AS product_price,
+            p.stock AS product_stock,
+            p.created_at AS product_created_at
+        FROM
+            pre_order po
+        JOIN
+            pre_order_items poi ON po.id = poi.pre_order_id
+        JOIN
+            products p ON poi.product_id = p.id
+        WHERE
+            po.id = ?
+    `;
+
+    db.all(sql, [preOrderId], (err, rows) => {
+        if (err) {
+            console.error('Error fetching pre-order:', err);
+            return res.status(500).json({ error: err.message });
+        }
+
+        // Group pre-order items by pre_order_id
+        const preOrder = {
+            id: preOrderId,
+            status: rows[0] ? rows[0].pre_order_status : 'Unknown',
+            items: [],
+        };
+
+        rows.forEach(row => {
+            const {
+                pre_order_item_id,
+                quantity,
+                item_price,
+                product_id,
+                product_name,
+                product_brand,
+                product_status,
+                product_tag,
+                product_category,
+                product_color,
+                product_description,
+                product_price,
+                product_stock,
+                product_created_at,
+            } = row;
+
+            // Add product information to the pre-order item
+            const item = {
+                id: pre_order_item_id,
+                quantity,
+                price: item_price,
+                product: {
+                    id: product_id,
+                    name: product_name,
+                    brand: product_brand,
+                    status: product_status,
+                    tag: product_tag,
+                    category: product_category,
+                    color: product_color,
+                    description: product_description,
+                    price: product_price,
+                    stock: product_stock,
+                    created_at: product_created_at,
+                },
+            };
+
+            preOrder.items.push(item);
+        });
+
+        res.json(preOrder);
+    });
+});
+
+
+
 app.use(session({
   secret: SECRET_KEY, // use a strong secret in production
   resave: false,
