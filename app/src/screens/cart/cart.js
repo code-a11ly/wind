@@ -4,7 +4,7 @@ import { getIp } from '../../components/ip.js';
 
 function Cart() {
   const ip = getIp();
-  const [products, setProducts] = useState([]);
+  const [preOrder, setPreOrder] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [maxQuantity, setMaxQuantity] = useState(null);
 
@@ -22,10 +22,10 @@ function Cart() {
     fetch(`http://localhost:5000/preorder/${preOrderId}`)
       .then((response) => response.json())
       .then((data) => {
-        setProducts(data.items); // ✅ now you're saving the correct array
-        console.log('Fetched items:', data.items);
+        setPreOrder(data); // ✅ now you're saving the correct array
+        console.log('Fetched items:', data);
       })
-      .catch((err) => console.error('Error fetching products:', err));
+      .catch((err) => console.error('Error fetching preOrder:', err));
   }, []);
 
 
@@ -57,96 +57,27 @@ function Cart() {
   };
 
 
-  const addToCart = async (product_id, quantity, price) => {
-
-    if (orderStatus == ('Closed' || 'Canceled' || '')) {
-      // Get the ID from localStorage and convert it to an integer
-      const users_id = parseInt(localStorage.getItem('id')) || 0; // Fallback to 0 if invalid
-      console.log('ID (type):', users_id, typeof users_id); // Should log a number
-
-      try {
-          const response = await fetch(`http://${ip}:5000/start-preorder`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ users_id }), // Now sends an integer
-          });
-
-          if (response.ok) { // Checks for status 200-299
-              console.log('Preorder started successfully');
-              const data = await response.json();
-
-              console.log(data.preOrderId);
-
-              localStorage.setItem('preOrderId', data.preOrderId);
-              setOrderStatus('Open');
-          } else if (response.status === 401) {
-              console.error('Invalid credentials!');
-          } else {
-              console.error('Failed to start preorder. Status:', response.status);
-          }
-      } catch (error) {
-          console.error('Network error:', error);
-      }
-    }
-
-    const preOrderId = parseInt(localStorage.getItem('preOrderId')); // Fallback to 0 if invalid
-    console.log('order (type):', preOrderId, typeof preOrderId); // Should log a number
-
-    try {
-        const response = await fetch(`http://${ip}:5000/add-to-preorder`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ preOrderId, product_id, quantity, price }), // Now sends an integer
-        });
-
-        if (response.ok) { // Checks for status 200-299
-            console.log('Preorder started successfully');
-            const data = await response.json();
-            localStorage.removeItem('cart');
-        } else if (response.status === 401) {
-            console.error('Invalid credentials!');
-        } else {
-            console.error('Failed to start itens preorder. Status:', response.status);
-        }
-    } catch (error) {
-        console.error('Network error:', error);
-    }
-};
-
-
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">Products</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-gray-900">preOrder</h2>
 
-        <div className="mt-6 grid grid-cols-1 gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
-          {products.map((product) => (
-            <div key={product.id} className="group relative cursor-pointer" onClick={() => openModal(product)}>
+        <div className="mt-12 flex flex-col gap-y-16">
+          {preOrder?.items?.map((item) => (
+            <div key={item.id} className="flex flex-row gap-16 cursor-pointer p-4 border border-gray-300 shadow-md" onClick={() => openModal(item)}>
               <img
-                alt={product.imageAlt || product.name}
-                src={
-                  product.images && product.images[0]
-                    ? `data:image/png;base64,${product.images[0].data}`
-                    : 'https://via.placeholder.com/150'
-                }
-                className="aspect-square w-full rounded-md bg-gray-200 object-cover group-hover:opacity-75 lg:aspect-auto lg:h-50"
+                alt={item.product.imageAlt || item.product.name}
+                src={`data:image/png;base64,${item.product.images[item]?.data}`}
+                className="w-26 h-12 rounded-md bg-gray-200 object-cover"
               />
-              <div className="mt-4 flex justify-between">
-                <div>
-                  <h3 className="text-sm text-gray-700">{product.name}</h3>
-                  <p className="mt-1 text-sm text-gray-500">{product.color || 'N/A'}</p>
-                </div>
-                <p className="text-sm font-medium text-gray-900">
-                  {product.price ? `$${product.price}` : 'Price Unavailable'}
-                </p>
-              </div>
+              <h3 className="text-sm text-gray-700">{item.product.name}</h3>
+              <h3 className="text-sm text-gray-700">{item.quantity}</h3>
+              <h3 className="text-sm text-gray-700">{item.price}</h3>
+              <h3 className="text-sm text-gray-700">{item.quantity * item.price}</h3>
             </div>
           ))}
         </div>
+
       </div>
 
       {/* Modal */}
@@ -166,17 +97,17 @@ function Cart() {
               <div className="flex flex-col gap-3">
               {/* Main Image */}
               <img
-                alt={selectedProduct.imageAlt || selectedProduct.name}
-                src={`data:image/png;base64,${selectedProduct.images[selectedImageIndex]?.data}`}
+                alt={selectedProduct.product.imageAlt || selectedProduct.product.name}
+                src={`data:image/png;base64,${selectedProduct.product.images[selectedImageIndex]?.data}`}
                 className="w-96 h-72 rounded-md bg-gray-200 object-cover"
               />
 
               {/* Thumbnail Images (Right Side) ALTERAR AQUI*/}
               <div className="w-96 flex flex-row gap-2 ml-1/2 overflow-hidden">
-                {selectedProduct.images.map((image, index) => (
+                {selectedProduct.product.images.map((image, index) => (
                   <img
                     key={index}
-                    alt={selectedProduct.imageAlt || selectedProduct.name}
+                    alt={selectedProduct.product.imageAlt || selectedProduct.product.name}
                     src={`data:image/png;base64,${image.data}`}
                     className={`w-16 h-16 rounded-md bg-gray-200 object-cover cursor-pointer
                       ${selectedImageIndex === index ? 'ring-2 ring-blue-500 shadow-md' : ''}`}
@@ -190,27 +121,27 @@ function Cart() {
             <div className="flex flex-col pl-7 gap-2">
               <div className="flex flex-row gap-1">
                 <div className="px-4 py-2 border border-gray-300 rounded-lg">
-                  <p className="text-xs text-gray-400 font-md">{selectedProduct.category}</p>
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.product.category}</p>
                 </div>
                 <div className="px-4 py-2 border border-gray-300 rounded-lg">
-                  <p className="text-xs text-gray-400 font-md">{selectedProduct.tag}</p>
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.product.tag}</p>
                 </div>
                 <div className="px-4 py-2 border border-gray-300 rounded-lg">
-                  <p className="text-xs text-gray-400 font-md">{selectedProduct.status}</p>
+                  <p className="text-xs text-gray-400 font-md">{selectedProduct.product.status}</p>
                 </div>
               </div>
-              <h2 className="text-5xl font-bold text-gray-700">{selectedProduct.name}</h2>
+              <h2 className="text-5xl font-bold text-gray-700">{selectedProduct.product.name}</h2>
               <p className="text-xl font-medium text-gray-400 mt-2">
-                {selectedProduct.brand ? `${selectedProduct.brand}` : 'Brand Unavailable'}
+                {selectedProduct.product.brand ? `${selectedProduct.product.brand}` : 'Brand Unavailable'}
               </p>
               <p className="text-xl font-medium text-gray-900">
-                {selectedProduct.price ? `$${selectedProduct.price}` : 'Price Unavailable'}
+                {selectedProduct.product.price ? `$${selectedProduct.product.price}` : 'Price Unavailable'}
               </p>
 
               <div className="w-72">
-                <p className=" text-base text-gray-700">{/*Details <br/>*/} {selectedProduct.description || 'No description available'}</p>
-                <p className="text-md text-gray-600 mt-3 <br/>">Colors {selectedProduct.color || 'N/A'}</p>
-                <p className="text-md text-gray-600 mt-3 <br/>">Quantity: {selectedProduct.stock || 'N/A'}</p>
+                <p className=" text-base text-gray-700">{/*Details <br/>*/} {selectedProduct.product.description || 'No description available'}</p>
+                <p className="text-md text-gray-600 mt-3 <br/>">Colors {selectedProduct.product.color || 'N/A'}</p>
+                <p className="text-md text-gray-600 mt-3 <br/>">Quantity: {selectedProduct.quantity || 'product.stockN/A'}</p>
 
 
                 <div className="flex items-center gap-2">
@@ -232,12 +163,12 @@ function Cart() {
               <button
                 type="submit"
                 className="w-72 flex justify-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                onClick={() => addToCart(selectedProduct.id, quantity, selectedProduct.price)}
+                // onClick={() => addToCart(selectedProduct.id, quantity, selectedProduct.price)}
               >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
               </svg>
-              Add to Cart
+              Save to Cart
               </button>
             </div>
           </div>
