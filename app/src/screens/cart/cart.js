@@ -14,6 +14,17 @@ function Cart() {
 
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirm = () => {
+    setIsLoading(true);
+    // Simulate action or async call
+    setTimeout(() => {
+      setIsLoading(false);
+      // your confirm logic here
+    }, 2000);
+  };
+
 
 
   useEffect(() => {
@@ -56,29 +67,81 @@ function Cart() {
     }
   };
 
+  const total = preOrder?.items?.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
 
   return (
-    <div className="bg-white">
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">preOrder</h2>
+    <div className="bg-gray-100">
+    <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-6">Pre-Order</h2>
 
-        <div className="mt-12 flex flex-col gap-y-16">
+      <div className="flex flex-col lg:flex-row gap-y-6 lg:gap-x-6 px-4 md:px-12 lg:px-32">
+        {/* Left - Items */}
+        <div className="flex flex-col gap-y-4 w-full lg:w-3/4">
           {preOrder?.items?.map((item) => (
-            <div key={item.id} className="flex flex-row gap-16 cursor-pointer p-4 border border-gray-300 shadow-md" onClick={() => openModal(item)}>
+            <div
+              key={item.id}
+              className="flex items-center gap-6 cursor-pointer p-4 bg-white border rounded-lg shadow-md transition-transform hover:scale-[1.01]"
+              onClick={() => openModal(item)}
+            >
               <img
                 alt={item.product.imageAlt || item.product.name}
-                src={`data:image/png;base64,${item.product.images[item]?.data}`}
-                className="w-26 h-12 rounded-md bg-gray-200 object-cover"
+                src={`data:image/png;base64,${item.product.images[0].data}`}
+                className="w-24 h-12 rounded-md bg-gray-200 object-cover"
               />
-              <h3 className="text-sm text-gray-700">{item.product.name}</h3>
-              <h3 className="text-sm text-gray-700">{item.quantity}</h3>
-              <h3 className="text-sm text-gray-700">{item.price}</h3>
-              <h3 className="text-sm text-gray-700">{item.quantity * item.price}</h3>
+              <div className="flex-1 grid grid-cols-4 gap-4 text-sm text-gray-700">
+                <span>{item.product.name}</span>
+                <span>{item.quantity}</span>
+                <span>${item.price}</span>
+                <span>${(item.quantity * item.price).toFixed(2)}</span>
+              </div>
             </div>
           ))}
         </div>
 
-      </div>
+        {/* Right - Confirm Button */}
+        <div className="flex flex-col items-center justify-center w-full h-1/2 overflow-auto bg-white lg:w-1/4 p-4 border rounded-lg shadow-md gap-4">
+          <h3 className="text-xl font-bold text-gray-900">Resumo do pedido</h3>
+
+          <p className="text-sm text-gray-600">
+            {preOrder?.items?.length || 0} item(s)
+          </p>
+
+          <div className="text-lg font-semibold text-gray-800">
+            Total: ${total?.toFixed(2)}
+          </div>
+
+          <p className="text-xs text-gray-500">* Taxas incluídas</p>
+
+          <button
+            type="button"
+            aria-label="Confirmar compra"
+            className="w-full flex justify-center items-center gap-2 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                Procesando...
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.25 3h1.386c.51 0 .955.343..."/>
+                </svg>
+                Confirmar compra
+              </>
+            )}
+          </button>
+        </div>
+
+    </div>
 
       {/* Modal */}
       {selectedProduct && (
@@ -138,7 +201,7 @@ function Cart() {
                 {selectedProduct.product.price ? `$${selectedProduct.product.price}` : 'Price Unavailable'}
               </p>
 
-              <div className="w-72">
+              <div className="w-80">
                 <p className=" text-base text-gray-700">{/*Details <br/>*/} {selectedProduct.product.description || 'No description available'}</p>
                 <p className="text-md text-gray-600 mt-3 <br/>">Colors {selectedProduct.product.color || 'N/A'}</p>
                 <p className="text-md text-gray-600 mt-3 <br/>">Quantity: {selectedProduct.quantity || 'product.stockN/A'}</p>
@@ -174,7 +237,7 @@ function Cart() {
           </div>
         </div>
       )}
-
+      </div>
     </div>
   );
 }

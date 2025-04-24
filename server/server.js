@@ -321,13 +321,19 @@ app.get('/preorder/:preOrderId', (req, res) => {
             p.description AS product_description,
             p.price AS product_price,
             p.stock AS product_stock,
-            p.created_at AS product_created_at
+            p.created_at AS product_created_at,
+            pi.id AS image_id,
+            pi.image AS image_data
         FROM
             pre_order po
         JOIN
             pre_order_items poi ON po.id = poi.pre_order_id
         JOIN
             products p ON poi.product_id = p.id
+        LEFT JOIN
+          product_images pi
+        ON
+          p.id = pi.product_id
         WHERE
             po.id = ?
     `;
@@ -345,6 +351,8 @@ app.get('/preorder/:preOrderId', (req, res) => {
             items: [],
         };
 
+        const itemMap = new Map();
+
         rows.forEach(row => {
             const {
                 pre_order_item_id,
@@ -361,32 +369,51 @@ app.get('/preorder/:preOrderId', (req, res) => {
                 product_price,
                 product_stock,
                 product_created_at,
+                image_id,
+                image_data
             } = row;
 
-            // Add product information to the pre-order item
-            const item = {
-                id: pre_order_item_id,
-                quantity,
-                price: item_price,
-                product: {
-                    id: product_id,
-                    name: product_name,
-                    brand: product_brand,
-                    status: product_status,
-                    tag: product_tag,
-                    category: product_category,
-                    color: product_color,
-                    description: product_description,
-                    price: product_price,
-                    stock: product_stock,
-                    created_at: product_created_at,
-                },
-            };
+            // If we’ve already seen this pre_order_item_id, just push the image
+            if (itemMap.has(pre_order_item_id)) {
+                const item = itemMap.get(pre_order_item_id);
+                if (image_id && image_data) {
+                    item.product.images.push({ id: image_id, data: Buffer.from(image_data).toString('base64') });
+                }
+            } else {
+                // Create new item
+                const newItem = {
+                    id: pre_order_item_id,
+                    quantity,
+                    price: item_price,
+                    product: {
+                        id: product_id,
+                        name: product_name,
+                        brand: product_brand,
+                        status: product_status,
+                        tag: product_tag,
+                        category: product_category,
+                        color: product_color,
+                        description: product_description,
+                        price: product_price,
+                        stock: product_stock,
+                        created_at: product_created_at,
+                        images: [],
+                    },
+                };
 
-            preOrder.items.push(item);
+                // Add image if it exists
+                if (image_id && image_data) {
+                    newItem.product.images.push({ id: image_id, data: Buffer.from(image_data).toString('base64') });
+                }
+
+                itemMap.set(pre_order_item_id, newItem);
+            }
         });
 
-        res.json(preOrder);
+        // Convert map to array
+        preOrder.items = Array.from(itemMap.values());
+
+          res.json(preOrder);
     });
 });
 
