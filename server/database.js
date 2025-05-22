@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     password TEXT,
     is_admin BOOLEAN DEFAULT 0,
-    role TEXT CHECK(role IN ('IT Team', 'Employee')) DEFAULT 'Employee',
+    role TEXT CHECK(role IN ('Admin', 'Seller', 'Client')) DEFAULT 'Client',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
