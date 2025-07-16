@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import GoogleLoginButton from '../../components/googleLoginButton.js';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
-import { setTempData, getTempData } from '../../components/tempData.js';
 import { getIp } from '../../components/ip.js';
 
 
@@ -62,8 +61,6 @@ function LoginForm() {
         if (response.status === 200) {
           console.log('Login successful');
           const data = await response.json();
-
-          setTempData(data);
 
           localStorage.removeItem('cart');
           // console.log('DATAtemp:', getTempData());
@@ -190,7 +187,6 @@ function LoginForm() {
         .then(data => {
           console.log('Data sent to server:', data);
           // Handle the response data from the server
-          setTempData({ key: data });
 
 
         })

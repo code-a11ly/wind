@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { Dialog, DialogPanel } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
+import UserButton from '../../components/userButton.js'
+
 
 const navigation = [
   { name: 'Product', href: '/productsList' },
@@ -79,10 +81,7 @@ export default function NavBar() {
         </div>
 
         <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-          <a href="/login" className="text-sm/6 font-semibold text-gray-900">
-            {data ? data : <>Log in <span aria-hidden="true">&rarr;</span></>}
-
-          </a>
+          {data ? <UserButton info={data} /> : <>Log in <span aria-hidden="true">&rarr;</span></>}
         </div>
       </nav>
 
